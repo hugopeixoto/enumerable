@@ -33,13 +33,13 @@ protected:
 int main() {
   auto enumerable = Range(4, 14);
 
-  enumerable.map<int>([](auto i) { return i * i; })
+  enumerable.map([](auto i) { return i * i; })
       .each([](auto i) { std::cout << "squared: " << i << std::endl; });
 
   std::cout << "min: " << enumerable.min() << std::endl;
   std::cout << "max: " << enumerable.max() << std::endl;
 
-  enumerable.group_by<int>([](auto i) { return i & 1; }).each([](auto group) {
+  enumerable.group_by([](auto i) { return i & 1; }).each([](auto group) {
     std::cout << "group " << group.first << ":";
     group.second.each([](auto v) { std::cout << " " << v; });
     std::cout << std::endl;

@@ -44,16 +44,16 @@ public:
     return c;
   }
 
-  template <typename T2>
-  Container<T2> map(std::function<T2(const T &)> pred) const {
-    Container<T2> mapped;
+  template <typename F>
+  auto map(F pred) const {
+    Container<decltype(pred(T()))> mapped;
     each([&](auto e) { mapped.push_back(pred(e)); });
     return mapped;
   }
 
-  template <typename K>
-  Container<std::pair<K, Container<T>>>
-  group_by(std::function<K(const T &)> key) const {
+  template <typename F>
+  auto group_by(F key) const {
+    typedef decltype(key(T())) K;
     std::map<K, Container<T>> grouped;
 
     each([&](auto e) { grouped[key(e)].push_back(e); });
