@@ -12,6 +12,7 @@ Example usage:
 
 ```c++
 #include "hugopeixoto/enumerable.h"
+#include "hugopeixoto/enumerable_ostream.h"
 
 #include <iostream>
 #include <vector>
@@ -46,22 +47,23 @@ protected:
 int main() {
   auto enumerable = Range(4, 14);
 
-  enumerable.map<int>([](auto i) { return i * i; })
-      .each([](auto i) { std::cout << "squared: " << i << std::endl; });
+  auto squares = enumerable.map([](auto i) { return i * i; });
 
-  std::cout << "min: " << enumerable.min() << std::endl;
-  std::cout << "max: " << enumerable.max() << std::endl;
+  auto minimum = enumerable.min();
+  auto maximum = enumerable.max();
 
-  enumerable.group_by<int>([](auto i) { return i & 1; }).each([](auto group) {
-    std::cout << "group " << group.first << ":";
-    group.second.each([](auto v) { std::cout << " " << v; });
-    std::cout << std::endl;
-  });
+  auto sum = enumerable.foldl(0, [](auto prev, auto v) { return prev + v; });
 
-  std::cout << "foldl(0, +): "
-            << enumerable.foldl<int>(0, [](const int &prev, const int &v) {
-                 return prev + v;
-               }) << std::endl;
+  auto grouped_by_parity = enumerable.group_by([](auto i) { return i & 1; });
+
+  std::cout << "squared: " << squares << std::endl;
+
+  std::cout << "min: " << minimum << std::endl;
+  std::cout << "max: " << maximum << std::endl;
+
+  std::cout << "sum: " << sum << std::endl;
+
+  std::cout << "grouped: " << grouped_by_parity << std::endl;
 
   return 0;
 }

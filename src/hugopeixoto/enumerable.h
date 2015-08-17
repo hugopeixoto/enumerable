@@ -14,7 +14,7 @@ public:
 
   Container<T> select(Predicate pred) const {
     Container<T> selected;
-    each([&](auto e) {
+    each([&](const auto &e) {
       if (pred(e))
         selected.push_back(e);
     });
@@ -23,7 +23,7 @@ public:
 
   bool any(Predicate pred) const {
     bool found = false;
-    each([&](auto e) { found |= pred(e); });
+    each([&](const auto &e) { found |= pred(e); });
     return found;
   }
 
@@ -37,26 +37,24 @@ public:
 
   uint64_t count(Predicate pred) const {
     uint64_t c = 0;
-    each([&](auto e) {
+    each([&](const auto &e) {
       if (pred(e))
         ++c;
     });
     return c;
   }
 
-  template <typename F>
-  auto map(F pred) const {
+  template <typename F> auto map(F pred) const {
     Container<decltype(pred(T()))> mapped;
-    each([&](auto e) { mapped.push_back(pred(e)); });
+    each([&](const auto &e) { mapped.push_back(pred(e)); });
     return mapped;
   }
 
-  template <typename F>
-  auto group_by(F key) const {
+  template <typename F> auto group_by(F key) const {
     typedef decltype(key(T())) K;
     std::map<K, Container<T>> grouped;
 
-    each([&](auto e) { grouped[key(e)].push_back(e); });
+    each([&](const auto &e) { grouped[key(e)].push_back(e); });
 
     Container<std::pair<K, Container<T>>> x;
     for (const auto &p : grouped) {
@@ -67,40 +65,38 @@ public:
   }
 
   T min() const {
-    return min<const T &>([](const T &t) -> const T & { return t; });
+    return min([](const T &t) { return t; });
   }
 
   T max() const {
-    return max<const T &>([](const T &t) -> const T & { return t; });
+    return max([](const T &t) { return t; });
   }
 
-  template <typename K> T min(std::function<K(const T &)> key) const {
+  template <typename F> T min(F key) const {
     typedef std::pair<bool, T> State;
     State initial(true, T());
 
-    return foldl<State>(initial, [key](const State &t, const T &v) {
-                          return State(
-                              false,
-                              t.first ? v : std::min(key(t.second), key(v)));
-                        }).second;
+    return foldl(initial, [key](const auto &t, const auto &v) {
+                   return State(
+                       false,
+                       t.first ? v : ((key(t.second) < key(v)) ? t.second : v));
+                 }).second;
   }
 
-  template <typename K> T max(std::function<K(const T &)> key) const {
+  template <typename F> T max(F key) const {
     typedef std::pair<bool, T> State;
     State initial(true, T());
 
-    return foldl<State>(initial, [key](const State &t, const T &v) {
-                          return State(
-                              false,
-                              t.first ? v : std::max(key(t.second), key(v)));
-                        }).second;
+    return foldl(initial, [key](const auto &t, const auto &v) {
+                   return State(
+                       false,
+                       t.first ? v : ((key(v) < key(t.second)) ? t.second : v));
+                 }).second;
   }
 
-  template <typename K>
-  K foldl(const K &initial,
-          std::function<K(const K &prev, const T &value)> op) const {
+  template <typename K, typename F> auto foldl(const K &initial, F op) const {
     auto r = initial;
-    each([&r, op](auto v) { r = op(r, v); });
+    each([&r, op](const auto &v) { r = op(r, v); });
     return r;
   }
 };
