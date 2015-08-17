@@ -19,9 +19,11 @@ std::ostream &operator<<(std::ostream &out,
   return out << ")";
 }
 
+namespace std {
 template <typename F, typename S>
-std::ostream &operator<<(std::ostream &out, const std::pair<F, S> &p) {
+ostream &operator<<(ostream &out, const pair<F, S> &p) {
   return out << "(" << p.first << ", " << p.second << ")";
+}
 }
 
 #endif
