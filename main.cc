@@ -4,30 +4,16 @@
 #include <iostream>
 #include <vector>
 
-template <typename T>
-class Container : public std::vector<T>, public Enumerable<T, Container> {
-public:
-  virtual void each(std::function<void(const T &)> pred) const override {
-    for (const T &e : *this) {
-      pred(e);
-    }
-  }
-};
-
 template<typename T>
-class Range : public Enumerable<T, Container> {
+class Range : public std::pair<T, T>, public Enumerable<T> {
 public:
-  Range(T lower, T upper) : lower(lower), upper(upper) {}
+  using std::pair<T,T>::pair;
 
   virtual void each(std::function<void(const T &)> callback) const {
-    for (T i = lower; i < upper; i++) {
+    for (T i = this->first; i < this->second; i++) {
       callback(i);
     }
   }
-
-protected:
-  T lower;
-  T upper;
 };
 
 int main() {

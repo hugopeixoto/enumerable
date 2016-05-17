@@ -3,11 +3,12 @@
 
 #include <vector>
 #include <map>
-#include <algorithm>
 #include <functional>
 #include <hugopeixoto/optional.h>
 
-template <typename T, template <typename> class Container> class Enumerable {
+template <typename T> class EnumerableVector;
+
+template <typename T, template <typename> class Container=EnumerableVector> class Enumerable {
 public:
   typedef std::function<bool(const T &)> Predicate;
 
@@ -91,6 +92,15 @@ public:
     auto r = initial;
     each([&r, op](auto v) { r = op(r, v); });
     return r;
+  }
+};
+
+template <typename T>
+class EnumerableVector : public std::vector<T>, public Enumerable<T> {
+  virtual void each(std::function<void(const T &)> pred) const override {
+    for (const T &e : *this) {
+      pred(e);
+    }
   }
 };
 
