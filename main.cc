@@ -14,10 +14,9 @@ public:
   }
 };
 
-class Range : public Enumerable<int, Container> {
+template<typename T>
+class Range : public Enumerable<T, Container> {
 public:
-  typedef int T;
-
   Range(T lower, T upper) : lower(lower), upper(upper) {}
 
   virtual void each(std::function<void(const T &)> callback) const {
@@ -32,25 +31,21 @@ protected:
 };
 
 int main() {
-  auto enumerable = Range(4, 14);
+  auto is_even = [](auto i) { return (i % 2) == 0; };
+  auto square  = [](auto i) { return i * i; };
+  auto add     = [](auto i, auto j) { return i + j; };
 
-  auto squares = enumerable.map([](auto i) { return i * i; });
+  auto enumerable = Range<int>(4, 14);
 
-  auto minimum = enumerable.min();
-  auto maximum = enumerable.max();
+  std::cout << "squared: " << enumerable.map(square) << std::endl;
 
-  auto sum = enumerable.foldl(0, [](auto prev, auto v) { return prev + v; });
+  std::cout << "min    : " << enumerable.min().orDefault(-1) << std::endl;
+  std::cout << "max    : " << enumerable.max().orDefault(-1) << std::endl;
 
-  auto grouped_by_parity = enumerable.group_by([](auto i) { return i & 1; });
+  std::cout << "sum    : " << enumerable.foldl(0, add) << std::endl;
 
-  std::cout << "squared: " << squares << std::endl;
-
-  std::cout << "min: " << minimum << std::endl;
-  std::cout << "max: " << maximum << std::endl;
-
-  std::cout << "sum: " << sum << std::endl;
-
-  std::cout << "grouped: " << grouped_by_parity << std::endl;
+  std::cout << "count  : " << enumerable.count(is_even) << std::endl;
+  std::cout << "grouped: " << enumerable.group_by(is_even) << std::endl;
 
   return 0;
 }
