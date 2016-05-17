@@ -5,6 +5,7 @@
 #include <map>
 #include <algorithm>
 #include <functional>
+#include <hugopeixoto/optional.h>
 
 template <typename T, template <typename> class Container> class Enumerable {
 public:
@@ -64,34 +65,29 @@ public:
     return x;
   }
 
-  T min() const {
-    return min([](const T &t) { return t; });
+  Optional<T> min() const {
+    return min([](auto t) { return t; });
   }
 
-  T max() const {
-    return max([](const T &t) { return t; });
+  Optional<T> max() const {
+    return max([](auto t) { return t; });
   }
 
-  template <typename F> T min(F key) const {
-    typedef std::pair<bool, T> State;
-    State initial(true, T());
-
-    return foldl(initial, [key](const auto &t, const auto &v) {
-                   return State(
-                       false,
-                       t.first ? v : ((key(t.second) < key(v)) ? t.second : v));
-                 }).second;
+  template <typename F>
+  Optional<T> min(F key) const {
+    return foldl(Optional<T>(), [key](auto t, auto v) {
+      return t.map([&](auto u) {
+        return key(u) < key(v) ? u : v;
+      }).orElse(v);
+    });
   }
 
-  template <typename F> T max(F key) const {
-    typedef std::pair<bool, T> State;
-    State initial(true, T());
-
-    return foldl(initial, [key](const auto &t, const auto &v) {
-                   return State(
-                       false,
-                       t.first ? v : ((key(v) < key(t.second)) ? t.second : v));
-                 }).second;
+  template <typename F> Optional<T> max(F key) const {
+    return foldl(Optional<T>(), [key](auto t, auto v) {
+      return t.map([&](auto u) {
+        return key(v) < key(u) ? u : v;
+      }).orElse(v);
+    });
   }
 
   template <typename K, typename F> auto foldl(const K &initial, F op) const {
