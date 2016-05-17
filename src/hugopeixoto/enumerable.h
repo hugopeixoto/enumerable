@@ -23,9 +23,9 @@ public:
   }
 
   bool any(Predicate pred) const {
-    bool found = false;
-    each([&](const auto &e) { found |= pred(e); });
-    return found;
+    return foldl(false, [&](auto acc, auto e) {
+      return acc | pred(e);
+    });
   }
 
   bool all(Predicate pred) const {
@@ -37,12 +37,9 @@ public:
   }
 
   uint64_t count(Predicate pred) const {
-    uint64_t c = 0;
-    each([&](const auto &e) {
-      if (pred(e))
-        ++c;
+    return foldl(0, [&](auto acc, auto e) {
+      return acc + (pred(e) ? 1 : 0);
     });
-    return c;
   }
 
   template <typename F> auto map(F pred) const {
