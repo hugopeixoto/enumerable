@@ -15,7 +15,7 @@ public:
 
   Container<T> select(Predicate pred) const {
     Container<T> selected;
-    each([&](const auto &e) {
+    each([&](auto e) {
       if (pred(e))
         selected.push_back(e);
     });
@@ -44,7 +44,7 @@ public:
 
   template <typename F> auto map(F pred) const {
     Container<decltype(pred(T()))> mapped;
-    each([&](const auto &e) { mapped.push_back(pred(e)); });
+    each([&](auto e) { mapped.push_back(pred(e)); });
     return mapped;
   }
 
@@ -52,7 +52,7 @@ public:
     typedef decltype(key(T())) K;
     std::map<K, Container<T>> grouped;
 
-    each([&](const auto &e) { grouped[key(e)].push_back(e); });
+    each([&](auto e) { grouped[key(e)].push_back(e); });
 
     Container<std::pair<K, Container<T>>> x;
     for (const auto &p : grouped) {
@@ -89,7 +89,7 @@ public:
 
   template <typename K, typename F> auto foldl(const K &initial, F op) const {
     auto r = initial;
-    each([&r, op](const auto &v) { r = op(r, v); });
+    each([&r, op](auto v) { r = op(r, v); });
     return r;
   }
 };
