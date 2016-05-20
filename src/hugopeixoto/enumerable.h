@@ -14,15 +14,6 @@ public:
 
   virtual void each(std::function<void(const T &)> callback) const = 0;
 
-  Container<T> select(Predicate pred) const {
-    Container<T> selected;
-    each([&](auto e) {
-      if (pred(e))
-        selected.push_back(e);
-    });
-    return selected;
-  }
-
   bool any(Predicate pred) const {
     return foldl(false, [&](auto acc, auto e) {
       return acc | pred(e);
@@ -55,6 +46,39 @@ public:
     return map([&](auto e){ return e.*pred; });
   }
 
+  Optional<T> min() const {
+    return min([](auto t) { return t; });
+  }
+
+  Optional<T> max() const {
+    return max([](auto t) { return t; });
+  }
+
+  template <typename F> Optional<T> max(F key) const {
+    return foldl(Optional<T>(), [key](auto t, auto v) {
+      return t.map([&](auto u) {
+        return key(v) < key(u) ? u : v;
+      }).orElse(v);
+    });
+  }
+
+  template <typename F> Optional<T> min(F key) const {
+    return foldl(Optional<T>(), [key](auto t, auto v) {
+      return t.map([&](auto u) {
+        return key(u) < key(v) ? u : v;
+      }).orElse(v);
+    });
+  }
+
+  Container<T> select(Predicate pred) const {
+    Container<T> selected;
+    each([&](auto e) {
+      if (pred(e))
+        selected.push_back(e);
+    });
+    return selected;
+  }
+
   template <typename F> auto map(F pred) const {
     Container<decltype(pred(T()))> mapped;
     each([&](auto e) { mapped.push_back(pred(e)); });
@@ -73,31 +97,6 @@ public:
     }
 
     return x;
-  }
-
-  Optional<T> min() const {
-    return min([](auto t) { return t; });
-  }
-
-  Optional<T> max() const {
-    return max([](auto t) { return t; });
-  }
-
-  template <typename F>
-  Optional<T> min(F key) const {
-    return foldl(Optional<T>(), [key](auto t, auto v) {
-      return t.map([&](auto u) {
-        return key(u) < key(v) ? u : v;
-      }).orElse(v);
-    });
-  }
-
-  template <typename F> Optional<T> max(F key) const {
-    return foldl(Optional<T>(), [key](auto t, auto v) {
-      return t.map([&](auto u) {
-        return key(v) < key(u) ? u : v;
-      }).orElse(v);
-    });
   }
 
   template <typename K, typename F> auto foldl(const K &initial, F op) const {
