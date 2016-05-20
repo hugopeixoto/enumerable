@@ -43,6 +43,18 @@ public:
     });
   }
 
+  template <typename F, typename U> auto map(U (F::*pred)()) const {
+    return map([&](auto e){ return (e.*pred)(); });
+  }
+
+  template <typename F, typename U> auto map(U (F::*pred)() const) const {
+    return map([&](auto e){ return (e.*pred)(); });
+  }
+
+  template <typename F, typename U> auto map(U F::*pred) const {
+    return map([&](auto e){ return e.*pred; });
+  }
+
   template <typename F> auto map(F pred) const {
     Container<decltype(pred(T()))> mapped;
     each([&](auto e) { mapped.push_back(pred(e)); });
