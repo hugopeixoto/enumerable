@@ -11,7 +11,7 @@ TEST_NAME=test
 TEST_SRC=main.cc
 
 
-CXXFLAGS += -Wall -pedantic -Werror -std=c++14 -stdlib=libc++
+CXXFLAGS += -Wall -pedantic -Werror -std=c++17 -stdlib=libc++
 LDFLAGS += -lc++
 
 CXXFLAGS += -I$(INCLUDE_PATH)

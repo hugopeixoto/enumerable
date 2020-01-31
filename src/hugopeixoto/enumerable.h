@@ -4,7 +4,7 @@
 #include <vector>
 #include <map>
 #include <functional>
-#include <hugopeixoto/optional.h>
+#include <optional>
 
 template <typename T> class EnumerableVector;
 
@@ -46,27 +46,27 @@ public:
     return map([&](auto e){ return e.*pred; });
   }
 
-  Optional<T> min() const {
+  std::optional<T> min() const {
     return min([](auto t) { return t; });
   }
 
-  Optional<T> max() const {
+  std::optional<T> max() const {
     return max([](auto t) { return t; });
   }
 
-  template <typename F> Optional<T> max(F key) const {
-    return foldl(Optional<T>(), [key](auto t, auto v) {
-      return t.map([&](auto u) {
-        return key(v) < key(u) ? u : v;
-      }).orElse(v);
+  template <typename F> std::optional<T> max(F key) const {
+    return foldl(std::optional<T>(), [key](auto t, auto v) {
+      return t.has_value() ?
+        (key(v) < key(*t) ? *t : std::make_optional(v)) :
+        std::make_optional(v);
     });
   }
 
-  template <typename F> Optional<T> min(F key) const {
-    return foldl(Optional<T>(), [key](auto t, auto v) {
-      return t.map([&](auto u) {
-        return key(u) < key(v) ? u : v;
-      }).orElse(v);
+  template <typename F> std::optional<T> min(F key) const {
+    return foldl(std::optional<T>(), [key](auto t, auto v) {
+      return t.has_value() ?
+        (key(*t) < key(v) ? *t : std::make_optional(v)) :
+        std::make_optional(v);
     });
   }
 
