@@ -4,7 +4,7 @@
 #include <vector>
 #include <map>
 #include <functional>
-#include <optional>
+#include "hugopeixoto/optional.h"
 
 namespace enumerable {
   namespace select {
@@ -90,7 +90,7 @@ public:
     begin_it(begin), end_it(end) {}
 
   Enumerable(const Enumerable<I, T>& i) :
-    begin_it(i.begin), end_it(i.end) {}
+    begin_it(i.begin_it), end_it(i.end_it) {}
 
   auto begin() const { return begin_it; }
   auto end() const { return end_it; }
@@ -116,11 +116,15 @@ public:
   auto find(Predicate pred) const {
     for (auto&& v : *this) {
       if (pred(v)) {
-        return std::optional(v);
+        return optional<T>(v);
       }
     }
 
-    return std::optional<T>();
+    return optional<T>();
+  }
+
+  auto first() const {
+    return find([](auto&& v) { return true; });
   }
 
   bool any(Predicate pred) const {
@@ -154,7 +158,7 @@ public:
 
   template<typename F> auto foldl(F op) const {
     if (begin_it == end_it) {
-      return std::optional<T>();
+      return optional<T>();
     }
 
     auto r = *begin_it;
@@ -163,7 +167,7 @@ public:
       r = op(r, *it);
     }
 
-    return std::make_optional(r);
+    return optional<T>(r);
   }
 
   auto min() const {
@@ -182,20 +186,21 @@ public:
     return foldl([&op](auto t, auto v) { return op(t) < op(v) ? v : t; });
   }
 
-  /*
-  each
-
-  template <typename F, typename U> auto map(U (F::*pred)()) const {
-    return map([&](auto e){ return (e.*pred)(); });
-  }
+  //template <typename F, typename U> auto map(U (F::*pred)()) const {
+  //  return map([&](auto e){ return (e.*pred)(); });
+  //}
 
   template <typename F, typename U> auto map(U (F::*pred)() const) const {
-    return map([&](auto e){ return (e.*pred)(); });
+    return map([=](auto e){ return (e.*pred)(); });
   }
 
   template <typename F, typename U> auto map(U F::*pred) const {
-    return map([&](auto e){ return e.*pred; });
+    return map([=](auto e){ return e.*pred; });
   }
+
+  /*
+  each
+
 
   template <typename F, template<typename> class Container=std::vector> auto group_by(F key) const {
     typedef decltype(key(std::declval<T>())) K;
